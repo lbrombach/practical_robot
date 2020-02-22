@@ -1,0 +1,35 @@
+<launch>
+  <node pkg="hector_mapping" type="hector_mapping" name="hector_mapping" output="screen">
+    <param name="scan_topic" value="/scan" />
+    <param name="map_frame" value="map" />
+    <param name="base_frame" value="base_link" />
+    <param name="output_timing" value="false"/>
+    <param name="use_tf_scan_transformation" value="true"/>
+    <param name="use_tf_pose_start_estimate" value="true"/>
+
+    <param name="map_pub_period" value="2.0"/>
+    <param name="pub_map_odom_transform" value="false"/>
+    <param name="map_update_distance_thresh" value=".4"/>
+    <param name="map_update_angle_thresh" value=".5"/>
+
+
+    <param name="laser_z_min_value" value = "-0.3"/>
+
+    <param name="update_factor_free" value="0.3"/>
+    <param name="update_factor_occupied" value="0.9"/>
+
+
+    <param name="laser_min_dist" value="0.4"/>
+    <param name="laser_max_dist" value="8"/>
+
+    <param name="map_resolution" value="0.1"/>
+    <param name="map_size" value="1024"/>
+    <param name="map_start_x" value="0.0"/>
+    <param name="map_start_y" value="0.0"/>
+    <param name="map_multi_res_levels" value="1"/>
+
+
+
+
+  </node>
+</launch>

@@ -1,0 +1,81 @@
+<!-- ### This launch file is the same as basic_manual_steer except simple_drive_controller  ### -->
+<!-- ### is launched instead of rqt_robot_steering. Robot will seek goal (waypoint) entered  ### -->
+<!-- ### via clik in rviz or  manual_pose_and_goal_pub node ### -->
+<!-- ### manual_pose_and_goal_pub node may be more pleasant removed here and launched manually in another terminal ### -->
+
+
+<launch>
+
+
+<!-- #############    Arguments  ##############-->
+
+<!-- insert absolute path to your map file or use find, as below-->
+<!--arg name="map_file" default="$(find [package where your yaml file is])/mymapName.yaml"/-->
+<arg name="map_file" default="$(find practical_nav)/maps/condo1.yaml"/>
+
+<arg name="scan_topic" default="scan" />
+
+
+
+<!-- #############      TF     ##############-->
+
+<!-- These should be customized for your robot, but should always be needed-->
+<node pkg="tf" type="static_transform_publisher" name="tf_base_link_laser" args=".10 0 0 0 3.1415 3.1415 base_link laser 10" />
+<node pkg="tf" type="static_transform_publisher" name="tf_base_imu"        args="-.07 .03 0 0 0 0 /base_link /imu 10" />
+
+<!-- This basic robot package locks the map and odom frames -->
+<!-- Comment out if another node will provide map to odom transform -->
+<node pkg="tf" type="static_transform_publisher" name="tf_map_odom" args="0 0 0 0 0 0 map odom 10" />
+
+<!-- Comment out if another node will provide odom to base_link transform -->
+<node pkg="practical_localization" type="tf_pub" name="tf_pub"/>
+
+<!-- #############    Sensors  ##############-->
+
+<node pkg="practical_sensors" type="tick_publisher" name="tick_publisher"/>
+<node pkg="practical_sensors" type="lsm303_l3gd20h_imu_pub" name="lsm303"/>
+
+<node pkg="rplidar_ros" type="rplidarNode" name="rplidar">
+    <param name="frame_id" type="string" value="laser" />
+</node>
+
+
+<!--Uncomment line below to run camera from this terminal window - beware of lots of warnings clogging the window-->
+<!--node pkg="usb_cam" type="usb_cam_node" name="usb_cam" /-->
+
+
+<!-- #############    Odom and Localization  ##############-->
+
+<node pkg="practical_localization" type="encoder_odom_publisher" name="encoder_odom_publisher"/>
+
+<node pkg="practical_localization" type="rviz_click_to_2d" name="rviz_click_to_2d"/>
+<node pkg="practical_localization" type="manual_pose_and_goal_pub" name="manual_pub" output="screen"/>
+
+
+
+<!-- #############    Drive and Motor Controllers  ##############-->
+
+<node pkg="practical_nav" type="simple_drive_controller" name="simple_drive_controller"> <!--pubs cmd_vel-->
+  <remap from="waypoint_2d" to="goal_2d" />  <!-- UNCOMMENT REMAP TO RUN DIRECTLY FROM CLICKS INSTEAD OF PATH PLANNER -->
+</node>
+
+<node pkg="practical_nav" type="simple_diff_drive" name="simple_diff_drive" /> <!--cmd_vel to pwm-->
+
+
+<!-- #############    Path Planner  ##############-->
+
+<!--not used in this manual mode/-->
+
+
+<!-- #############    Map Server  ##############-->
+
+<!-- Run the map server -->
+<node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" >
+    <!--remap from="map" to="initial_map" /-->
+  </node>
+
+<node name="costmapper" pkg="practical_nav" type="costmapper"  />
+
+
+</launch>
+

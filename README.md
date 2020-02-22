@@ -1,0 +1,8 @@
+This repository is a simple, example ROS robotics package for the example robot built in the book Practical Robotics in C++ by Lloyd Brombach. This is a simple robot meant to be an affoordable and practical platform to teach all of the robotics fundamentals including basic electronics, robotics logic and algorithms, coding for ROS robots, and continue learning after book tutorials are complete. The code in the repository is written to be easily followed by all levels of C++ programmer rather than optimized for performance. It relies on only a few common ROS packages like map_server and costmap_2d in addition to your hardware drivers. Navigation is handled in a simpler way than using the full ROS Navigation stack. More information and full usage instructions can be found in Practical Robotics in C++ by Lloyd Brombach and published by Packt Publishing. 
+
+For readers of Practical Robotics in C++ - The code has all been tested and runs on the example robot in the book, but of course occasional bugs are found and as they are reported and fixed they will be comitted here. 
+
+All robots and drivetrains willl have some individual characteristics that require some indivualized tuning. I refer you back to the relevant chapters in Practical Robotics in C++ and I willl be starting a Practical Robotics support forum where Readers can help eachother, share new things and keep learning together. in the meantime I will make announcements at facebook.com/practicalrobotics and can be messaged there as well.
+
+Lloyd Brombach
+Practical Robotics in C++

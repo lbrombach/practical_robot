@@ -1,0 +1,78 @@
+<!-- ### This launch file is enables manual drive with rqt_robot_steering  ### -->
+<!-- ### manual_pose_and_goal_pub node may be more pleasant removed here and launched manually in another terminal ### -->
+
+<launch>
+
+
+<!-- #############    Arguments  ##############-->
+
+<!-- insert absolute path to your map file or use find, as below-->
+<!--arg name="map_file" default="$(find [package where your yaml file is])/mymapName.yaml"/-->
+<arg name="map_file" default="$(find practical_nav)/maps/condo1.yaml"/>
+
+<arg name="scan_topic" default="scan" />
+
+
+
+<!-- #############      TF     ##############-->
+
+<!-- These should be customized for your robot, but should always be needed-->
+<node pkg="tf" type="static_transform_publisher" name="tf_base_link_laser" args=".10 0 0 0 3.1415 3.1415 base_link laser 20" />
+<node pkg="tf" type="static_transform_publisher" name="tf_base_imu"        args="-.07 .03 0 0 0 0 /base_link /imu 20" />
+
+
+<!-- This basic robot package locks the map and odom frames -->
+<!-- Commented out because mapping nodes like gmapping generally provide map to odom transform -->
+<node pkg="tf" type="static_transform_publisher" name="tf_map_odom" args="0 0 0 0 0 0 map odom 10" />
+
+
+<!-- Comment out if another node will provide odom to base_link transform -->
+<node pkg="practical_localization" type="tf_pub" name="tf_pub"/>
+
+
+<!-- #############    Sensors  ##############-->
+
+<node pkg="practical_sensors" type="tick_publisher" name="tick_publisher"/>
+
+<!-- **Comment out bn0055 and Uncomment lsm303 or insert your own IMU below if you aren't using bn0055 with the node listed ** -->
+<!--node pkg="practical_sensors" type="lsm303_l3gd20h_imu_pub" name="lsm303"/-->
+<node pkg="bn0055_fusion_imu" type="bn0055_accel_gyro_fusion_pub" name="bn0055"/>
+
+
+<node pkg="rplidar_ros" type="rplidarNode" name="rplidar">
+    <param name="frame_id" type="string" value="laser" />
+</node>
+
+
+<!--Uncomment line below to run camera from this terminal window - beware of lots of warnings clogging the window-->
+<!--node pkg="usb_cam" type="usb_cam_node" name="usb_cam" /-->
+
+
+<!-- #############    Odom and Localization  ##############-->
+
+<node pkg="practical_localization" type="odom_plus" name="odom_plus"/>
+
+<node pkg="practical_localization" type="rviz_click_to_2d" name="rviz_click_to_2d"/>
+<node pkg="practical_localization" type="manual_pose_and_goal_pub" name="manual_pub" output="screen"/>
+
+
+
+<!-- #############    Drive and Motor Controllers  ##############-->
+
+<node pkg="rqt_robot_steering" type="rqt_robot_steering" name="rqt_robot_steering"/>
+
+<node pkg="practical_nav" type="simple_diff_drive" name="simple_diff_drive" /> <!--cmd_vel to pwm-->
+
+
+<!-- #############    Path Planner  ##############-->
+
+<!--not used in this manual mode/-->
+
+
+<!-- #############    Map Server  ##############-->
+
+<!--not used in this mode - map expected to come from gmapping, hector_slam, or other map-making node/-->
+
+
+</launch>
+
