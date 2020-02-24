@@ -115,7 +115,7 @@ int cbLeft=callback(pi, leftEncoder,EITHER_EDGE, left_event);
 int cbRight=callback(pi, rightEncoder, EITHER_EDGE, right_event);
 
 
-ros::init(argc, argv, "encoder_tick_pub");
+ros::init(argc, argv, "tick_publisher");
 ros::NodeHandle node;
 ros::Publisher pubLeft = node.advertise<std_msgs::Int16>("leftWheel", 1000);
 ros::Publisher pubRight = node.advertise<std_msgs::Int16>("rightWheel", 1000);

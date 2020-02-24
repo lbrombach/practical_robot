@@ -1,0 +1,41 @@
+<!-- ### This launch file is enables the minimal manual drive with rqt_robot_steering  ### -->
+
+<launch>
+
+
+
+
+
+<!-- #############    Sensors  ##############-->
+
+<node pkg="practical_sensors" type="tick_publisher" name="tick_publisher"/>
+
+
+
+
+<!-- #############    Drive and Motor Controllers  ##############-->
+
+<node pkg="rqt_robot_steering" type="rqt_robot_steering" name="rqt_robot_steering"/>
+
+<node pkg="practical_nav" type="simple_diff_drive" name="simple_diff_drive" /> <!--cmd_vel to pwm-->
+
+
+
+
+
+
+<!-- #############   Optional   ##############-->
+
+
+
+<!--Beware of lots of warnings clogging the window, many prefer to launch usb_cam manually in another terminal window-->
+<!--Uncomment line below to run camera from this terminal window-->
+<!--node pkg="usb_cam" type="usb_cam_node" name="usb_cam" /-->
+
+
+<!--Uncomment to launch the image viewer automatically -->
+<!--node pkg="rqt_image_view" type="rqt_image_view" name="rqt_image_view" /-->
+
+
+</launch>
+
