@@ -1,3 +1,14 @@
+/*
+*This is a ROS node that monitors a pair of hall effect encoders and publishes
+*the tick counts for a left wheel and right wheel in ROS. Whether each
+*GPIO event is incremented or decremented is determined by check the direction
+*signal going to the motor driver. This is written simply
+*to be readable for all levels and accompanies the book Practical Robotics in C++.
+*
+*Author: Lloyd Brombach (lbrombach2@gmail.com)
+*11/7/2019
+*/
+
 #include "ros/ros.h"
 #include "std_msgs/Int16.h"
 #include <pigpiod_if2.h>
@@ -22,9 +33,9 @@ std_msgs::Int16 rightCount;
 //this is the callback function that runs when a change of state happens on the monitored gpio pin
 void left_event(int pi, unsigned int gpio, unsigned int edge, unsigned int tick)
 {
-if(gpio_read(pi, leftReverse)==0)
+if(gpio_read(pi, leftReverse)==0) //decrement if motor commanded to reverse
     {
-     if(leftCount.data==encoderMin)
+     if(leftCount.data==encoderMin) //handle rollunder
      {
       leftCount.data = encoderMax;
      }
@@ -34,9 +45,9 @@ if(gpio_read(pi, leftReverse)==0)
      }
 
     }
-else
+else  //increment if not commanded to reverse (must be going forward)
     {
-     if(leftCount.data==encoderMax)
+     if(leftCount.data==encoderMax) //handle rollover
      {
       leftCount.data = encoderMin;
      }
@@ -78,60 +89,61 @@ else
 
 int PigpioSetup()
 {
-char *addrStr = NULL;
-char *portStr = NULL;
-int pi = pigpio_start(addrStr, portStr);
+    char *addrStr = NULL;
+    char *portStr = NULL;
+    int pi = pigpio_start(addrStr, portStr);
 
-//set the mode and pullup to read the encoder like a switch
-set_mode(pi, leftEncoder, PI_INPUT);
-set_mode(pi, rightEncoder, PI_INPUT);
-set_mode(pi, leftReverse, PI_INPUT);
-set_mode(pi, rightReverse, PI_INPUT);
-set_pull_up_down(pi, leftEncoder, PI_PUD_UP);
-set_pull_up_down(pi, rightEncoder, PI_PUD_UP);
-set_pull_up_down(pi, leftReverse, PI_PUD_UP);
-set_pull_up_down(pi, rightReverse, PI_PUD_UP);
+    //set the mode and pullup to read the encoder like a switch
+    set_mode(pi, leftEncoder, PI_INPUT);
+    set_mode(pi, rightEncoder, PI_INPUT);
+    set_mode(pi, leftReverse, PI_INPUT);
+    set_mode(pi, rightReverse, PI_INPUT);
+    set_pull_up_down(pi, leftEncoder, PI_PUD_UP);
+    set_pull_up_down(pi, rightEncoder, PI_PUD_UP);
+    set_pull_up_down(pi, leftReverse, PI_PUD_UP);
+    set_pull_up_down(pi, rightReverse, PI_PUD_UP);
 
-return pi;
+    return pi;
 }
 
 int main(int argc, char **argv)
 {
-//initialize pipiod interface
-int pi = PigpioSetup();
-if(pi>=0)
+    //initialize pipiod interface
+    int pi = PigpioSetup();
+    if(pi>=0)
     {
-    cout<<"daemon interface started ok at "<<pi<<endl;
+        cout<<"daemon interface started ok at "<<pi<<endl;
     }
- else
- {
- cout<<"Failed to connect to PIGPIO Daemon - is it running?"<<endl;
- return -1;
- }
+    else
+    {
+        cout<<"Failed to connect to PIGPIO Daemon - is it running?"<<endl;
+        return -1;
+    }
 
 
-//initializes callbacks
-int cbLeft=callback(pi, leftEncoder,EITHER_EDGE, left_event);
-int cbRight=callback(pi, rightEncoder, EITHER_EDGE, right_event);
+    //initializes callbacks
+    int cbLeft=callback(pi, leftEncoder,EITHER_EDGE, left_event);
+    int cbRight=callback(pi, rightEncoder, EITHER_EDGE, right_event);
+
+    //normal ROS node setup: Register node with master,  advertise publishers
+    ros::init(argc, argv, "tick_publisher");
+    ros::NodeHandle node;
+    ros::Publisher pubLeft = node.advertise<std_msgs::Int16>("leftWheel", 1000);
+    ros::Publisher pubRight = node.advertise<std_msgs::Int16>("rightWheel", 1000);
 
 
-ros::init(argc, argv, "tick_publisher");
-ros::NodeHandle node;
-ros::Publisher pubLeft = node.advertise<std_msgs::Int16>("leftWheel", 1000);
-ros::Publisher pubRight = node.advertise<std_msgs::Int16>("rightWheel", 1000);
+    ros::Rate loop_rate(30);
+    while(ros::ok)
+    {
+        pubLeft.publish(leftCount);
+        pubRight.publish(rightCount);
+        ros::spinOnce();
 
-
-  ros::Rate loop_rate(30);
-  while(ros::ok)
-  {
-  pubLeft.publish(leftCount);
-  pubRight.publish(rightCount);
-    ros::spinOnce();
-
-    loop_rate.sleep();
-  }
-callback_cancel(cbLeft);
-callback_cancel(cbRight);
-pigpio_stop(pi);
-  return 0;
+        loop_rate.sleep();
+    }
+    //terminate callbacks and pigpiod connectoin to release daemon resources
+    callback_cancel(cbLeft);
+    callback_cancel(cbRight);
+    pigpio_stop(pi);
+    return 0;
 }

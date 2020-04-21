@@ -216,7 +216,7 @@ void optimize(vector<cell> &path)
     //starting at last goal (path[0]) and checking each waypoint until we find clear straight line to a cell
     while (obstacle_on_line == true && path[furthestFreeCell++].index != path.back().index)
     {
-        cout<<"furthest free cell = "<<path[furthestFreeCell].index<<"and val = "<<_map->data[path[furthestFreeCell].index]<<endl;
+        cout<<"furthest free cell = "<<path[furthestFreeCell].index<<" and val = "<<(int)_map->data[path[furthestFreeCell].index]<<endl;
         //we're going to iterate between points. set our start and endpoints for iterating
         int startX, endX, startY, endY;
         if (start.x <= path[furthestFreeCell].x)

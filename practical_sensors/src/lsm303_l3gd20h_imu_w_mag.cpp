@@ -1,3 +1,12 @@
+/*
+*This is a ROS node that that reads and publishes an LSM303 magnetometer in addition to
+*an LSM303DLHC accelerometer and L3GD20 gyroscope in ROS. This is written simply
+*to be readable for all levels and accompanies lessons in the book Practical Robotics in C++.
+*
+*Author: Lloyd Brombach (lbrombach2@gmail.com)
+*11/7/2019
+*/
+
 #include "ros/ros.h"
 #include "sensor_msgs/Imu.h"
 #include "sensor_msgs/MagneticField.h"
@@ -24,6 +33,7 @@ using namespace std;
 
 void mag_setup()
 {
+    //initiate comms with magnetometer and get handle
     MAG_HANDLE=i2c_open(pi,I2Cbus, LSM303_mag   ,0);
     if (MAG_HANDLE>=0)
     {
@@ -66,6 +76,7 @@ void get_mag()
 
 void gyro_setup()
 {
+    //initiate comms with gyroscope and get handle
     GYRO_HANDLE=i2c_open(pi,I2Cbus, L3GD20_gyro,0);
     if (GYRO_HANDLE>=0)
     {
@@ -103,26 +114,28 @@ void get_gyro()
 
 void accel_setup()
 {
-ACCEL_HANDLE=i2c_open(pi,I2Cbus, LSM303_accel,0);
-if (ACCEL_HANDLE>=0)
+    //initiate comms with accelerometer and get handle
+    ACCEL_HANDLE=i2c_open(pi,I2Cbus, LSM303_accel,0);
+    if (ACCEL_HANDLE>=0)
     {
-     cout<<"Accelerometer found. Handle = "<<ACCEL_HANDLE<<endl;
+        cout<<"Accelerometer found. Handle = "<<ACCEL_HANDLE<<endl;
     }
-else
+    else
     {
-     cout<<"Unable to open I2C comms with Accelerometer"<<endl;
+        cout<<"Unable to open I2C comms with Accelerometer"<<endl;
     }
 
-i2c_write_byte_data(pi, ACCEL_HANDLE, 0x20, 0x47); //set frequency
-time_sleep(.02);
-i2c_write_byte_data(pi, ACCEL_HANDLE, 0x23, 0x09); //continuous update, LSB at lower addr, +- 2g, Hi-Res disable
-time_sleep(.02);
+    i2c_write_byte_data(pi, ACCEL_HANDLE, 0x20, 0x47); //set frequency
+    time_sleep(.02);
+    i2c_write_byte_data(pi, ACCEL_HANDLE, 0x23, 0x09); //continuous update, LSB at lower addr, +- 2g, Hi-Res disable
+    time_sleep(.02);
 }
 
 void get_accel()
 {
     int xLSB = (int)i2c_read_byte_data(pi, ACCEL_HANDLE, 0x28);
     int xMSB = (int)i2c_read_byte_data(pi, ACCEL_HANDLE, 0x29);
+    //12 bits resolution, MSB right-jusified, then convert to Tesla
     myImu.linear_acceleration.x=(float)((int16_t)(xLSB | xMSB<<8)>>4)/1000*9.81;
 
     int yLSB = (int)i2c_read_byte_data(pi, ACCEL_HANDLE, 0x2A);
